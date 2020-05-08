@@ -22,7 +22,7 @@ class ClientProtocol(asyncio.Protocol):
             # login:User
             if decoded.startswith("login:"):
                 login = decoded.replace("login:", "").replace("\r\n", "")
-                if check_login(login):
+                if self.server.check_login(login):
                     self.login = login
                     self.transport.write(
                         f"Привет, {self.login}!".encode()
@@ -39,13 +39,14 @@ class ClientProtocol(asyncio.Protocol):
 
     def send_history(self):
         for message in self.server.message_stack:
-            if message != None:
-                self.transport.write(message)
+            if message != "none":
+                encoded = message.encode()
+                self.transport.write(encoded)
 
     def send_message(self, message):
         format_string = f"<{self.login}> {message}"
         encoded = format_string.encode()
-        self.server.stack_update(encoded) # Добавление сообщения в стек
+        self.server.stack_update(format_string) # Добавление сообщения в стек
 
         # Пользователь должен "зайти" в чат, чтобы не только посылать, но и принимать сообщения
         for client in self.server.clients:
@@ -65,13 +66,14 @@ class ClientProtocol(asyncio.Protocol):
 
 class Server:
     clients: list
-    message_stack: list # Стек последних 10 сообщений
+    message_stack: list 
+    # Стек последних 10 сообщений
     # Для хранения всех сообщений чата можно использовать список, без удаления первого элемента
     # Но для решения поставленной задачи хранение всех сообщений будет только занимать лишнюю память
 
     def __init__(self):
         self.clients = []
-        self.massage_stack = [None,None,None,None,None,None,None,None,None,None]
+        self.message_stack = ["none","none","none","none","none","none","none","none","none","none"]
 
     def stack_update(self,message): # Реализация функционала стека FIFO сделанного из списка
         self.message_stack.append(message)
