@@ -80,7 +80,7 @@ class Server:
     def check_login (self,login): # Проверка является ли желаемый логин уже использующимся
         avalable = True
         for client in self.clients:
-            if client.login is login
+            if client.login is login:
                 avalable = False
         return avalable
 
